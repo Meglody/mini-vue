@@ -15,7 +15,7 @@ digraph G {
     
     componentUpdateFn[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="componentUpdateFn：\l用途：组件初始化、更新逻辑"]
     
-    effect[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="effect: () => runner with property effect:\l1.实例化了一个ReactiveEffect对象_effect，\l2.执行一次他的run方法，\l3.之后将updateOptions中的方法和_effect合并，\l4.将run方法bind到_effect上作为返回值返回（runner），\l5.把_effect挂到runnner的属性下，\l总结:ReactiveEffect构造函数返回了一个runner，runner.effect = _effect"]
+    effect[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="effect: () => runner with property effect:\l1.实例化了一个ReactiveEffect对象_effect，\l2.执行一次他的run方法(调用了componentUpdateFn)，\l3.之后将updateOptions中的方法和_effect合并，\l4.将run方法bind到_effect上作为返回值返回（runner），\l5.把_effect挂到runnner的属性下，\l总结:ReactiveEffect构造函数返回了一个runner，runner.effect = _effect"]
 
     ReactiveEffect[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="Class ReactiveEffect:\l用途：用于依赖收集, 里面有个run方法和stop方法"]
     
@@ -24,17 +24,50 @@ digraph G {
     ReactiveEffect".stop"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="ReactiveEffect.stop():\l用途：通过ReactiveEffect.deps\l找到所有依赖这个effect的响应式对象，从deps中删除，不再更新。"]
 
     ReactiveEffect".deps"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="ReactiveEffect.deps : any[]\l用途:用于存储依赖当前effect或者叫runner的所有响应式对象"]
+
+    /* componentUpdateFn */ 
+    "componentUpdateFn.!isMounted"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="componentUpdateFn.!isMounted:\l没有mounted的情况，\l由于本函数将来会在effect内部的run函数调用\l所以在此调用传入的instance.render函数，即是在effect内部调用render函数\l(可以访问到activeEffect)\l此时会先触发到响应式数据被代理时的get方法，\lget方法内部调用了track方法以便跟踪依赖"]
+    
+    get内部的track方法[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="get内部的track方法:\l检查全局trackMap(以WeakMap的形式new)，\l添加/更新一个响应式对象的Map映射depsMap(以Map形式储存)，\l检查depsMap，\l添加/更新响应式对象中的一个响应值key(以Set形式储存)"]
+    
+    track方法内部的trackEffect方法[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="track方法内部的trackEffect方法:\l在当前depsMap中找到传入的key对应的dep(Set)，\l检查当前dep中是否有当前activeEffect这个依赖，\l没有的话添加，\l至此依赖收集完毕，返回上层componentUpdateFn函数进行patch，\l组件mounted"]
+
+    "componentUpdateFn.isMounted"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="componentUpdateFn.isMounted:\l已经mounted的情况，调用更新逻辑，\lupdateComponentPreRender先检测props和slots的更新，\l调用instance.render函数，\l形成新的subTree，\l与旧的subTree进行patch"]
+    
     /* Links */
-    componentUpdateFn -> 挂载update方法在instance对象上;
-    updateOptions -> 挂载update方法在instance对象上;
+    "componentUpdateFn.!isMounted" -> get内部的track方法;
+    "componentUpdateFn.!isMounted" -> track方法内部的trackEffect方法;
+    componentUpdateFn -> "componentUpdateFn.!isMounted";
+    componentUpdateFn -> "componentUpdateFn.isMounted";
+    effect -> updateOptions;
+    effect -> componentUpdateFn;
     queueJob -> updateOptions;
-    effect -> 挂载update方法在instance对象上;
+    挂载update方法在instance对象上 -> effect;
     ReactiveEffect -> effect;
     ReactiveEffect".run" -> ReactiveEffect;
     ReactiveEffect".stop" -> ReactiveEffect;
     ReactiveEffect".deps" -> ReactiveEffect;
+
+    /* SubGraphs */ 
+
+    subgraph cluster_ReactiveEffect{
+        label = "ReactiveEffect逻辑"
+        effect,
+        ReactiveEffect,
+        ReactiveEffect".run",
+        ReactiveEffect".stop",
+        ReactiveEffect".deps"
+    }
+    
+    subgraph cluster_componentUpdateFn{
+        label = "componentUpdateFn逻辑"
+        "componentUpdateFn.!isMounted",
+        "componentUpdateFn.isMounted",
+        componentUpdateFn
+    }
+
     
     /* Ranks */
     { rank=same; 挂载update方法在instance对象上; };
-    { rank=same; componentUpdateFn; updateOptions; };
+    // { rank=same; componentUpdateFn; updateOptions; };
 }
