@@ -23,7 +23,7 @@ const findDots = async () => {
 
 const outputPic = async (dotfiles) => {
     const map = {}
-    const linkPrev = `https://github.com/Meglody/mini-vue/blob/xdot/assets/`
+    const linkPrev = `https://github.com/Meglody/mini-vue/blob/xdot/xdot/assets/`
     try{
         await mkdir(join(root, './assets'))
     }catch(e){}
