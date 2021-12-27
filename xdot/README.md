@@ -4,5 +4,5 @@
 - 本文件夹用于展示脑图，README根据模版自动生成
     
 
-[setupRenderEffect.png](https://github.com/Meglody/mini-vue/blob/xdot/xdot/assets/setupRenderEffect.png)
+![setupRenderEffect.png](https://github.com/Meglody/mini-vue/blob/xdot/xdot/assets/setupRenderEffect.png)
         

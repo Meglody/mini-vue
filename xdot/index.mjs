@@ -59,7 +59,7 @@ const createTemplate = (map) => {
         const fileLink = map[fileName]
         loop += `
 
-[${fileName}](${fileLink})
+![${fileName}](${fileLink})
         `
     })
     return head + loop
