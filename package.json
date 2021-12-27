@@ -7,8 +7,7 @@
   "scripts": {
     "build": "rollup -c",
     "build:type": "tsc -p ./tsconfig.type.json",
-    "test": "jest --no-cache",
-    "xdot": "node ./xdot/index.mjs"
+    "test": "jest --no-cache"
   },
   "author": "cuixiaorui",
   "homepage": "https://github.com/cuixiaorui",
