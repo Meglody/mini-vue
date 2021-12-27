@@ -38,7 +38,7 @@ jobs:
       # 执行hexo generate命令
       - name: Act xdot generate
         run: |
-          rm -rf ./node_modules && npm ci && npm run build
+          npm run xdot
         
       # 检查文件夹
       - name: Check folder
