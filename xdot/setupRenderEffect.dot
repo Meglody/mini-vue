@@ -1,0 +1,40 @@
+digraph G {
+    splines="FALSE";
+    rankdir=LR;
+    node [shape = record];
+    
+    /* Nodes */
+    挂载update方法在instance对象上[shape = rect, style=filled ,color = orange, fontcolor=black,
+    label="instance.update = effect(componentUpdateFn, updateOptions);\l将返回的runner挂载在instance对象的update方法上"]
+    
+    updateOptions[shape = rect, style=filled ,color = lightblue, fontcolor=black,
+    label="updateOptions: {scheduler: () => queueJob(instance.update);}\l目的：把 effect 推到微任务的时候在执行"]
+
+    queueJob[shape = rect, style=filled ,color = lightblue, fontcolor=black,
+    label="queueJob:\l把传入的runner推到微任务栈里面，\l等到下一次微任务的时候一次性更新所有runner"]
+    
+    componentUpdateFn[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="componentUpdateFn：\l用途：组件初始化、更新逻辑"]
+    
+    effect[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="effect: () => runner with property effect:\l1.实例化了一个ReactiveEffect对象_effect，\l2.执行一次他的run方法，\l3.之后将updateOptions中的方法和_effect合并，\l4.将run方法bind到_effect上作为返回值返回（runner），\l5.把_effect挂到runnner的属性下，\l总结:ReactiveEffect构造函数返回了一个runner，runner.effect = _effect"]
+
+    ReactiveEffect[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="Class ReactiveEffect:\l用途：用于依赖收集, 里面有个run方法和stop方法"]
+    
+    ReactiveEffect".run"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="ReactiveEffect.run():\l用途：执行传入的componentUpdateFn，\l在执行的时候，将当前组件的ReactiveEffect\l绑定到activeEffect上，准备收集依赖，执行完再清除绑定。"]
+
+    ReactiveEffect".stop"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="ReactiveEffect.stop():\l用途：通过ReactiveEffect.deps\l找到所有依赖这个effect的响应式对象，从deps中删除，不再更新。"]
+
+    ReactiveEffect".deps"[shape = rect, style=filled ,color = lightblue, fontcolor=black, label="ReactiveEffect.deps : any[]\l用途:用于存储依赖当前effect或者叫runner的所有响应式对象"]
+    /* Links */
+    componentUpdateFn -> 挂载update方法在instance对象上;
+    updateOptions -> 挂载update方法在instance对象上;
+    queueJob -> updateOptions;
+    effect -> 挂载update方法在instance对象上;
+    ReactiveEffect -> effect;
+    ReactiveEffect".run" -> ReactiveEffect;
+    ReactiveEffect".stop" -> ReactiveEffect;
+    ReactiveEffect".deps" -> ReactiveEffect;
+    
+    /* Ranks */
+    { rank=same; 挂载update方法在instance对象上; };
+    { rank=same; componentUpdateFn; updateOptions; };
+}
